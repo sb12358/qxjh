@@ -1,19 +1,21 @@
 {% extends "base.html" %}
 {% block title %}编辑板块 - QXJH{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h2>编辑板块</h2>
-</section>
-
-<form method="post" class="panel form-grid">
-  <div class="field">
-    <label>板块名称 *</label>
-    <input type="text" name="name" required value="{{ item.name }}" />
-  </div>
-
-  <div class="action-row">
-    <button class="btn btn-primary" type="submit">保存</button>
-    <a class="btn btn-secondary" href="{{ url_for('admin.sector_masters') }}">返回列表</a>
-  </div>
-</form>
+{% set page_data = {
+  'type': 'form',
+  'title': '编辑板块',
+  'form': {
+    'method': 'post',
+    'action': request.path,
+    'fields': [
+      {'type': 'text', 'name': 'name', 'label': '板块名称 *', 'required': true, 'value': item.name}
+    ],
+    'actions': [
+      {'type': 'submit', 'variant': 'primary', 'label': '保存'},
+      {'type': 'link', 'variant': 'secondary', 'label': '返回列表', 'href': url_for('admin.sector_masters')}
+    ]
+  }
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}

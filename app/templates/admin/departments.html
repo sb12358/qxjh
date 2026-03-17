@@ -1,47 +1,33 @@
 {% extends "base.html" %}
 {% block title %}组织架构 - QXJH{% endblock %}
 {% block content %}
-<section class="page-head page-head-inline">
-  <div>
-    <h2>组织架构</h2>
-    <p>支持部门增删改查，并可用于用户归属管理。</p>
-  </div>
-  <a class="btn btn-primary" href="{{ url_for('admin.create_department') }}">新增部门</a>
-</section>
-
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>部门名</th>
-        <th>编码</th>
-        <th>上级部门</th>
-        <th>人员数量</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for dept in items %}
-      <tr>
-        <td>{{ dept.id }}</td>
-        <td>{{ dept.name }}</td>
-        <td>{{ dept.code }}</td>
-        <td>{{ dept.parent.name if dept.parent else '-' }}</td>
-        <td>{{ dept.users|length }}</td>
-        <td>
-          <div class="action-row">
-            <a class="btn btn-ghost" href="{{ url_for('admin.edit_department', department_id=dept.id) }}">编辑</a>
-            <form method="post" action="{{ url_for('admin.delete_department', department_id=dept.id) }}" onsubmit="return confirm('确认删除该部门？')">
-              <button class="btn btn-danger" type="submit">删除</button>
-            </form>
-          </div>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="6">暂无数据</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+{% set ns = namespace(rows=[]) %}
+{% for dept in items %}
+  {% set ns.rows = ns.rows + [{
+    'cells': [
+      dept.id,
+      dept.name,
+      dept.code,
+      dept.parent.name if dept.parent else '-',
+      dept.users|length,
+      {'kind': 'actions', 'actions': [
+        {'type': 'link', 'variant': 'ghost', 'label': '编辑', 'href': url_for('admin.edit_department', department_id=dept.id)},
+        {'type': 'post', 'variant': 'danger', 'label': '删除', 'action': url_for('admin.delete_department', department_id=dept.id), 'confirm': '确认删除该部门？'}
+      ]}
+    ]
+  }] %}
+{% endfor %}
+{% set page_data = {
+  'type': 'table',
+  'title': '组织架构',
+  'description': '支持部门增删改查，并可用于用户归属管理。',
+  'primaryAction': {'type': 'link', 'variant': 'primary', 'label': '新增部门', 'href': url_for('admin.create_department')},
+  'table': {
+    'columns': ['ID', '部门名', '编码', '上级部门', '人员数量', '操作'],
+    'rows': ns.rows,
+    'emptyText': '暂无数据'
+  }
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}

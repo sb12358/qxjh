@@ -1,45 +1,32 @@
 {% extends "base.html" %}
 {% block title %}权限配置 - QXJH{% endblock %}
 {% block content %}
-<section class="page-head page-head-inline">
-  <div>
-    <h2>权限配置</h2>
-    <p>定义页面权限点，并可分配给角色。</p>
-  </div>
-  <a class="btn btn-primary" href="{{ url_for('admin.create_permission') }}">新增权限</a>
-</section>
-
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>权限代码</th>
-        <th>名称</th>
-        <th>说明</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for p in items %}
-      <tr>
-        <td>{{ p.id }}</td>
-        <td>{{ p.code }}</td>
-        <td>{{ p.name }}</td>
-        <td>{{ p.description or '-' }}</td>
-        <td>
-          <div class="action-row">
-            <a class="btn btn-ghost" href="{{ url_for('admin.edit_permission', permission_id=p.id) }}">编辑</a>
-            <form method="post" action="{{ url_for('admin.delete_permission', permission_id=p.id) }}" onsubmit="return confirm('确认删除该权限？')">
-              <button class="btn btn-danger" type="submit">删除</button>
-            </form>
-          </div>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="5">暂无数据</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+{% set ns = namespace(rows=[]) %}
+{% for p in items %}
+  {% set ns.rows = ns.rows + [{
+    'cells': [
+      p.id,
+      p.code,
+      p.name,
+      p.description or '-',
+      {'kind': 'actions', 'actions': [
+        {'type': 'link', 'variant': 'ghost', 'label': '编辑', 'href': url_for('admin.edit_permission', permission_id=p.id)},
+        {'type': 'post', 'variant': 'danger', 'label': '删除', 'action': url_for('admin.delete_permission', permission_id=p.id), 'confirm': '确认删除该权限？'}
+      ]}
+    ]
+  }] %}
+{% endfor %}
+{% set page_data = {
+  'type': 'table',
+  'title': '权限配置',
+  'description': '定义页面权限点，并可分配给角色。',
+  'primaryAction': {'type': 'link', 'variant': 'primary', 'label': '新增权限', 'href': url_for('admin.create_permission')},
+  'table': {
+    'columns': ['ID', '权限代码', '名称', '说明', '操作'],
+    'rows': ns.rows,
+    'emptyText': '暂无数据'
+  }
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}

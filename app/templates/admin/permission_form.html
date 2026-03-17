@@ -1,27 +1,31 @@
 {% extends "base.html" %}
 {% block title %}{{ '新增权限' if mode == 'create' else '编辑权限' }} - QXJH{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h2>{{ '新增权限' if mode == 'create' else '编辑权限' }}</h2>
-</section>
-
-<form method="post" class="panel form-grid">
-  <div class="field full">
-    <label>权限代码 *</label>
-    <input type="text" name="code" required value="{{ item.code if item else '' }}" placeholder="例如：admin.users.view" />
-  </div>
-  <div class="field">
-    <label>权限名称 *</label>
-    <input type="text" name="name" required value="{{ item.name if item else '' }}" />
-  </div>
-  <div class="field">
-    <label>说明</label>
-    <input type="text" name="description" value="{{ item.description if item else '' }}" />
-  </div>
-
-  <div class="action-row">
-    <button class="btn btn-primary" type="submit">保存</button>
-    <a class="btn btn-secondary" href="{{ url_for('admin.permissions') }}">返回列表</a>
-  </div>
-</form>
+{% set page_data = {
+  'type': 'form',
+  'title': '新增权限' if mode == 'create' else '编辑权限',
+  'form': {
+    'method': 'post',
+    'action': request.path,
+    'fields': [
+      {
+        'type': 'text',
+        'name': 'code',
+        'label': '权限代码 *',
+        'required': true,
+        'full': true,
+        'value': item.code if item else '',
+        'placeholder': '例如：admin.users.view'
+      },
+      {'type': 'text', 'name': 'name', 'label': '权限名称 *', 'required': true, 'value': item.name if item else ''},
+      {'type': 'text', 'name': 'description', 'label': '说明', 'value': item.description if item else ''}
+    ],
+    'actions': [
+      {'type': 'submit', 'variant': 'primary', 'label': '保存'},
+      {'type': 'link', 'variant': 'secondary', 'label': '返回列表', 'href': url_for('admin.permissions')}
+    ]
+  }
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}

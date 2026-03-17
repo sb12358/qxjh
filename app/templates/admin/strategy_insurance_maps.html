@@ -1,65 +1,50 @@
 {% extends "base.html" %}
 {% block title %}策略投保属性对应表 - QXJH{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h2>策略投保属性对应表</h2>
-  <p>策略与投保属性（投机/套保）的对应关系维护。</p>
-</section>
+{% set ns = namespace(strategy_options=[{'value': '', 'label': '请选择策略号'}], rows=[]) %}
+{% for s in strategies %}
+  {% set ns.strategy_options = ns.strategy_options + [{'value': s.strategy_no, 'label': s.strategy_no}] %}
+{% endfor %}
 
-<form method="post" class="panel form-grid">
-  <div class="field">
-    <label>策略 *</label>
-    <select name="strategy" required>
-      <option value="">请选择策略号</option>
-      {% for s in strategies %}
-      <option value="{{ s.strategy_no }}">{{ s.strategy_no }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="field">
-    <label>投保属性 *</label>
-    <select name="insurance_type" required>
-      <option value="投机">投机</option>
-      <option value="套保">套保</option>
-    </select>
-  </div>
-  <div class="action-row">
-    <button class="btn btn-primary" type="submit" {% if not strategies %}disabled{% endif %}>新增记录</button>
-  </div>
-</form>
-{% if not strategies %}
-<p class="hint">暂无可选策略号，请先到“系统设置 > 策略维护”新增策略。</p>
-{% endif %}
+{% for item in items %}
+  {% set ns.rows = ns.rows + [{
+    'cells': [
+      item.id,
+      item.strategy,
+      item.insurance_type,
+      {'kind': 'actions', 'actions': [
+        {'type': 'link', 'variant': 'ghost', 'label': '编辑', 'href': url_for('admin.edit_strategy_insurance_map', item_id=item.id)},
+        {'type': 'post', 'variant': 'danger', 'label': '删除', 'action': url_for('admin.delete_strategy_insurance_map', item_id=item.id), 'confirm': '确认删除该记录？'}
+      ]}
+    ]
+  }] %}
+{% endfor %}
 
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>策略</th>
-        <th>投保属性</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in items %}
-      <tr>
-        <td>{{ item.id }}</td>
-        <td>{{ item.strategy }}</td>
-        <td>{{ item.insurance_type }}</td>
-        <td>
-          <div class="action-row">
-            <a class="btn btn-ghost" href="{{ url_for('admin.edit_strategy_insurance_map', item_id=item.id) }}">编辑</a>
-            <form method="post" action="{{ url_for('admin.delete_strategy_insurance_map', item_id=item.id) }}" onsubmit="return confirm('确认删除该记录？')">
-              <button class="btn btn-danger" type="submit">删除</button>
-            </form>
-          </div>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="4">暂无数据</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+{% set page_data = {
+  'type': 'table',
+  'title': '策略投保属性对应表',
+  'description': '策略与投保属性（投机/套保）的对应关系维护。',
+  'createForm': {
+    'method': 'post',
+    'action': url_for('admin.strategy_insurance_maps'),
+    'fields': [
+      {'type': 'select', 'name': 'strategy', 'label': '策略 *', 'required': true, 'options': ns.strategy_options},
+      {'type': 'select', 'name': 'insurance_type', 'label': '投保属性 *', 'required': true, 'options': [
+        {'value': '投机', 'label': '投机'},
+        {'value': '套保', 'label': '套保'}
+      ]}
+    ],
+    'actions': [
+      {'type': 'submit', 'variant': 'primary', 'label': '新增记录', 'disabled': (not strategies)}
+    ]
+  },
+  'hints': [] if strategies else ['暂无可选策略号，请先到“基础数据维护 > 策略维护”新增策略。'],
+  'table': {
+    'columns': ['ID', '策略', '投保属性', '操作'],
+    'rows': ns.rows,
+    'emptyText': '暂无数据'
+  }
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}

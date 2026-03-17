@@ -1,57 +1,39 @@
 {% extends "base.html" %}
 {% block title %}用户管理 - QXJH{% endblock %}
 {% block content %}
-<section class="page-head page-head-inline">
-  <div>
-    <h2>用户管理</h2>
-    <p>支持用户增删改查、所属部门设置、角色分配。</p>
-  </div>
-  <a class="btn btn-primary" href="{{ url_for('admin.create_user') }}">新增用户</a>
-</section>
-
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>用户名</th>
-        <th>用户姓名</th>
-        <th>邮箱</th>
-        <th>部门</th>
-        <th>角色</th>
-        <th>状态</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for user in items %}
-      <tr>
-        <td>{{ user.id }}</td>
-        <td>{{ user.username }}</td>
-        <td>{{ user.full_name or '-' }}</td>
-        <td>{{ user.email or '-' }}</td>
-        <td>{{ user.department.name if user.department else '-' }}</td>
-        <td>
-          {% for role in user.roles %}
-            {{ role.name }}{% if not loop.last %}, {% endif %}
-          {% else %}
-            -
-          {% endfor %}
-        </td>
-        <td><span class="tag">{{ '启用' if user.is_active else '停用' }}</span></td>
-        <td>
-          <div class="action-row">
-            <a class="btn btn-ghost" href="{{ url_for('admin.edit_user', user_id=user.id) }}">编辑</a>
-            <form method="post" action="{{ url_for('admin.delete_user', user_id=user.id) }}" onsubmit="return confirm('确认删除该用户？')">
-              <button class="btn btn-danger" type="submit">删除</button>
-            </form>
-          </div>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="8">暂无数据</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+{% set ns = namespace(rows=[]) %}
+{% for user in items %}
+  {% set role_ns = namespace(text=[]) %}
+  {% for role in user.roles %}
+    {% set role_ns.text = role_ns.text + [role.name] %}
+  {% endfor %}
+  {% set ns.rows = ns.rows + [{
+    'cells': [
+      user.id,
+      user.username,
+      user.full_name or '-',
+      user.email or '-',
+      user.department.name if user.department else '-',
+      role_ns.text|join(', ') if role_ns.text else '-',
+      {'kind': 'badge', 'variant': 'success' if user.is_active else 'muted', 'text': '启用' if user.is_active else '停用'},
+      {'kind': 'actions', 'actions': [
+        {'type': 'link', 'variant': 'ghost', 'label': '编辑', 'href': url_for('admin.edit_user', user_id=user.id)},
+        {'type': 'post', 'variant': 'danger', 'label': '删除', 'action': url_for('admin.delete_user', user_id=user.id), 'confirm': '确认删除该用户？'}
+      ]}
+    ]
+  }] %}
+{% endfor %}
+{% set page_data = {
+  'type': 'table',
+  'title': '用户管理',
+  'description': '支持用户增删改查、所属部门设置、角色分配。',
+  'primaryAction': {'type': 'link', 'variant': 'primary', 'label': '新增用户', 'href': url_for('admin.create_user')},
+  'table': {
+    'columns': ['ID', '用户名', '用户姓名', '邮箱', '部门', '角色', '状态', '操作'],
+    'rows': ns.rows,
+    'emptyText': '暂无数据'
+  }
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}

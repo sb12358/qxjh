@@ -1,34 +1,37 @@
 {% extends "base.html" %}
 {% block title %}{{ '新增部门' if mode == 'create' else '编辑部门' }} - QXJH{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h2>{{ '新增部门' if mode == 'create' else '编辑部门' }}</h2>
-</section>
+{% set ns = namespace(parent_options=[{'value': '', 'label': '无'}]) %}
+{% for dept in departments %}
+  {% if not department or dept.id != department.id %}
+    {% set ns.parent_options = ns.parent_options + [{'value': dept.id, 'label': dept.name}] %}
+  {% endif %}
+{% endfor %}
 
-<form method="post" class="panel form-grid">
-  <div class="field">
-    <label>部门名 *</label>
-    <input type="text" name="name" required value="{{ department.name if department else '' }}" />
-  </div>
-  <div class="field">
-    <label>部门编码 *</label>
-    <input type="text" name="code" required value="{{ department.code if department else '' }}" />
-  </div>
-  <div class="field full">
-    <label>上级部门</label>
-    <select name="parent_id">
-      <option value="">无</option>
-      {% for dept in departments %}
-      {% if not department or dept.id != department.id %}
-      <option value="{{ dept.id }}" {% if department and department.parent_id == dept.id %}selected{% endif %}>{{ dept.name }}</option>
-      {% endif %}
-      {% endfor %}
-    </select>
-  </div>
-
-  <div class="action-row">
-    <button class="btn btn-primary" type="submit">保存</button>
-    <a class="btn btn-secondary" href="{{ url_for('admin.departments') }}">返回列表</a>
-  </div>
-</form>
+{% set page_data = {
+  'type': 'form',
+  'title': '新增部门' if mode == 'create' else '编辑部门',
+  'form': {
+    'method': 'post',
+    'action': request.path,
+    'fields': [
+      {'type': 'text', 'name': 'name', 'label': '部门名 *', 'required': true, 'value': department.name if department else ''},
+      {'type': 'text', 'name': 'code', 'label': '部门编码 *', 'required': true, 'value': department.code if department else ''},
+      {
+        'type': 'select',
+        'name': 'parent_id',
+        'label': '上级部门',
+        'full': true,
+        'value': department.parent_id if department else '',
+        'options': ns.parent_options
+      }
+    ],
+    'actions': [
+      {'type': 'submit', 'variant': 'primary', 'label': '保存'},
+      {'type': 'link', 'variant': 'secondary', 'label': '返回列表', 'href': url_for('admin.departments')}
+    ]
+  }
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}
