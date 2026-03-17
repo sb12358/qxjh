@@ -1,45 +1,32 @@
 {% extends "base.html" %}
 {% block title %}角色管理 - QXJH{% endblock %}
 {% block content %}
-<section class="page-head page-head-inline">
-  <div>
-    <h2>角色管理</h2>
-    <p>角色可绑定页面权限，再分配给用户。</p>
-  </div>
-  <a class="btn btn-primary" href="{{ url_for('admin.create_role') }}">新增角色</a>
-</section>
-
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>角色名</th>
-        <th>说明</th>
-        <th>权限数量</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for role in items %}
-      <tr>
-        <td>{{ role.id }}</td>
-        <td>{{ role.name }}</td>
-        <td>{{ role.description or '-' }}</td>
-        <td>{{ role.permissions|length }}</td>
-        <td>
-          <div class="action-row">
-            <a class="btn btn-ghost" href="{{ url_for('admin.edit_role', role_id=role.id) }}">编辑权限</a>
-            <form method="post" action="{{ url_for('admin.delete_role', role_id=role.id) }}" onsubmit="return confirm('确认删除该角色？')">
-              <button class="btn btn-danger" type="submit">删除</button>
-            </form>
-          </div>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="5">暂无数据</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+{% set ns = namespace(rows=[]) %}
+{% for role in items %}
+  {% set ns.rows = ns.rows + [{
+    'cells': [
+      role.id,
+      role.name,
+      role.description or '-',
+      role.permissions|length,
+      {'kind': 'actions', 'actions': [
+        {'type': 'link', 'variant': 'ghost', 'label': '编辑权限', 'href': url_for('admin.edit_role', role_id=role.id)},
+        {'type': 'post', 'variant': 'danger', 'label': '删除', 'action': url_for('admin.delete_role', role_id=role.id), 'confirm': '确认删除该角色？'}
+      ]}
+    ]
+  }] %}
+{% endfor %}
+{% set page_data = {
+  'type': 'table',
+  'title': '角色管理',
+  'description': '角色可绑定页面权限，再分配给用户。',
+  'primaryAction': {'type': 'link', 'variant': 'primary', 'label': '新增角色', 'href': url_for('admin.create_role')},
+  'table': {
+    'columns': ['ID', '角色名', '说明', '权限数量', '操作'],
+    'rows': ns.rows,
+    'emptyText': '暂无数据'
+  }
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}

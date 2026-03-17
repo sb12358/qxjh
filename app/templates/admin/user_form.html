@@ -1,63 +1,71 @@
 {% extends "base.html" %}
 {% block title %}{{ '新增用户' if mode == 'create' else '编辑用户' }} - QXJH{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h2>{{ '新增用户' if mode == 'create' else '编辑用户' }}</h2>
-</section>
+{% set ns = namespace(role_options=[], department_options=[{'value': '', 'label': '未分配'}]) %}
+{% for role in roles %}
+  {% set ns.role_options = ns.role_options + [{
+    'value': role.id,
+    'label': role.name,
+    'checked': role.id in selected_role_ids
+  }] %}
+{% endfor %}
 
-<form method="post" class="panel form-grid">
-  <div class="field">
-    <label>用户名 *</label>
-    <input type="text" name="username" required value="{{ user.username if user else '' }}" />
-  </div>
-  <div class="field">
-    <label>用户姓名 *</label>
-    <input type="text" name="full_name" required value="{{ user.full_name if user else '' }}" />
-  </div>
-  <div class="field">
-    <label>邮箱</label>
-    <input type="email" name="email" value="{{ user.email if user else '' }}" />
-  </div>
-  <div class="field">
-    <label>{% if mode == 'create' %}密码 *{% else %}新密码（不改可留空）{% endif %}</label>
-    <input type="password" name="password" {% if mode == 'create' %}required{% endif %} />
-  </div>
-  <div class="field">
-    <label>所属部门</label>
-    <select name="department_id">
-      <option value="">未分配</option>
-      {% for dept in departments %}
-      <option value="{{ dept.id }}" {% if user and user.department_id == dept.id %}selected{% endif %}>{{ dept.name }}</option>
-      {% endfor %}
-    </select>
-  </div>
+{% for dept in departments %}
+  {% set ns.department_options = ns.department_options + [{'value': dept.id, 'label': dept.name}] %}
+{% endfor %}
 
-  <div class="field full">
-    <label>角色分配</label>
-    <div class="checkbox-grid">
-      {% for role in roles %}
-      <label class="checkbox-card">
-        <input type="checkbox" name="role_ids" value="{{ role.id }}" {% if role.id in selected_role_ids %}checked{% endif %} />
-        <span>{{ role.name }}</span>
-      </label>
-      {% else %}
-      <span class="hint">暂无角色，请先创建角色</span>
-      {% endfor %}
-    </div>
-  </div>
+{% set fields = [
+  {'type': 'text', 'name': 'username', 'label': '用户名 *', 'required': true, 'value': user.username if user else ''},
+  {'type': 'text', 'name': 'full_name', 'label': '用户姓名 *', 'required': true, 'value': user.full_name if user else ''},
+  {'type': 'email', 'name': 'email', 'label': '邮箱', 'value': user.email if user else ''},
+  {
+    'type': 'password',
+    'name': 'password',
+    'label': '密码 *' if mode == 'create' else '新密码（不改可留空）',
+    'required': mode == 'create'
+  },
+  {
+    'type': 'select',
+    'name': 'department_id',
+    'label': '所属部门',
+    'value': user.department_id if user else '',
+    'options': ns.department_options
+  },
+  {
+    'type': 'checkbox-group',
+    'name': 'role_ids',
+    'label': '角色分配',
+    'full': true,
+    'options': ns.role_options,
+    'emptyText': '暂无角色，请先创建角色'
+  }
+] %}
 
-  {% if mode == 'edit' %}
-  <div class="field full">
-    <label class="checkbox-inline">
-      <input type="checkbox" name="is_active" {% if user and user.is_active %}checked{% endif %} />
-      用户启用状态
-    </label>
-  </div>
-  {% endif %}
+{% if mode == 'edit' %}
+  {% set fields = fields + [
+    {
+      'type': 'checkbox',
+      'name': 'is_active',
+      'label': '用户启用状态',
+      'full': true,
+      'checked': user.is_active if user else false
+    }
+  ] %}
+{% endif %}
 
-  <div class="action-row">
-    <button class="btn btn-primary" type="submit">保存</button>
-    <a class="btn btn-secondary" href="{{ url_for('admin.users') }}">返回列表</a>
-  </div>
-</form>
+{% set page_data = {
+  'type': 'form',
+  'title': '新增用户' if mode == 'create' else '编辑用户',
+  'form': {
+    'method': 'post',
+    'action': request.path,
+    'fields': fields,
+    'actions': [
+      {'type': 'submit', 'variant': 'primary', 'label': '保存'},
+      {'type': 'link', 'variant': 'secondary', 'label': '返回列表', 'href': url_for('admin.users')}
+    ]
+  }
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}

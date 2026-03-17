@@ -1,48 +1,39 @@
 {% extends "base.html" %}
 {% block title %}板块维护 - QXJH{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h2>板块维护</h2>
-  <p>维护板块主数据（仅板块名称）。</p>
-</section>
-
-<form method="post" class="panel form-grid">
-  <div class="field">
-    <label>板块名称 *</label>
-    <input type="text" name="name" required placeholder="例如：黑色" />
-  </div>
-  <div class="action-row">
-    <button class="btn btn-primary" type="submit">新增板块</button>
-  </div>
-</form>
-
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>板块名称</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in items %}
-      <tr>
-        <td>{{ item.id }}</td>
-        <td>{{ item.name }}</td>
-        <td>
-          <div class="action-row">
-            <a class="btn btn-ghost" href="{{ url_for('admin.edit_sector_master', item_id=item.id) }}">编辑</a>
-            <form method="post" action="{{ url_for('admin.delete_sector_master', item_id=item.id) }}" onsubmit="return confirm('确认删除该记录？')">
-              <button class="btn btn-danger" type="submit">删除</button>
-            </form>
-          </div>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="3">暂无数据</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+{% set ns = namespace(rows=[]) %}
+{% for item in items %}
+  {% set ns.rows = ns.rows + [{
+    'cells': [
+      item.id,
+      item.name,
+      {'kind': 'actions', 'actions': [
+        {'type': 'link', 'variant': 'ghost', 'label': '编辑', 'href': url_for('admin.edit_sector_master', item_id=item.id)},
+        {'type': 'post', 'variant': 'danger', 'label': '删除', 'action': url_for('admin.delete_sector_master', item_id=item.id), 'confirm': '确认删除该记录？'}
+      ]}
+    ]
+  }] %}
+{% endfor %}
+{% set page_data = {
+  'type': 'table',
+  'title': '板块维护',
+  'description': '维护板块主数据（仅板块名称）。',
+  'createForm': {
+    'method': 'post',
+    'action': url_for('admin.sector_masters'),
+    'fields': [
+      {'type': 'text', 'name': 'name', 'label': '板块名称 *', 'required': true, 'placeholder': '例如：黑色'}
+    ],
+    'actions': [
+      {'type': 'submit', 'variant': 'primary', 'label': '新增板块'}
+    ]
+  },
+  'table': {
+    'columns': ['ID', '板块名称', '操作'],
+    'rows': ns.rows,
+    'emptyText': '暂无数据'
+  }
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}

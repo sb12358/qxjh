@@ -1,35 +1,28 @@
 {% extends "base.html" %}
 {% block title %}结算持仓汇总表 - QXJH{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h2>结算持仓汇总表</h2>
-  <p>该页面用于维护和查看结算持仓汇总相关源数据配置。</p>
-</section>
-
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>表名</th>
-        <th>显示名</th>
-        <th>来源系统</th>
-        <th>状态</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in items %}
-      <tr>
-        <td>{{ item.id }}</td>
-        <td>{{ item.table_name }}</td>
-        <td>{{ item.display_name }}</td>
-        <td>{{ item.owner_system or '-' }}</td>
-        <td><span class="tag">{{ '启用' if item.enabled else '停用' }}</span></td>
-      </tr>
-      {% else %}
-      <tr><td colspan="5">暂无数据</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+{% set ns = namespace(rows=[]) %}
+{% for item in items %}
+  {% set ns.rows = ns.rows + [{
+    'cells': [
+      item.id,
+      item.table_name,
+      item.display_name,
+      item.owner_system or '-',
+      {'kind': 'badge', 'variant': 'success' if item.enabled else 'muted', 'text': '启用' if item.enabled else '停用'}
+    ]
+  }] %}
+{% endfor %}
+{% set page_data = {
+  'type': 'table',
+  'title': '结算持仓汇总表',
+  'description': '该页面用于维护和查看结算持仓汇总相关源数据配置。',
+  'table': {
+    'columns': ['ID', '表名', '显示名', '来源系统', '状态'],
+    'rows': ns.rows,
+    'emptyText': '暂无数据'
+  }
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}

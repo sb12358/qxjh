@@ -1,36 +1,49 @@
 {% extends "base.html" %}
 {% block title %}编辑策略投保属性 - QXJH{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h2>编辑策略投保属性</h2>
-</section>
-
-<form method="post" class="panel form-grid">
-  <div class="field">
-    <label>策略 *</label>
-    <select name="strategy" required>
-      {% if not strategies %}
-      <option value="">暂无策略号</option>
-      {% endif %}
-      {% for s in strategies %}
-      <option value="{{ s.strategy_no }}" {% if item.strategy == s.strategy_no %}selected{% endif %}>{{ s.strategy_no }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="field">
-    <label>投保属性 *</label>
-    <select name="insurance_type" required>
-      <option value="投机" {% if item.insurance_type == '投机' %}selected{% endif %}>投机</option>
-      <option value="套保" {% if item.insurance_type == '套保' %}selected{% endif %}>套保</option>
-    </select>
-  </div>
-
-  <div class="action-row">
-    <button class="btn btn-primary" type="submit" {% if not strategies %}disabled{% endif %}>保存</button>
-    <a class="btn btn-secondary" href="{{ url_for('admin.strategy_insurance_maps') }}">返回列表</a>
-  </div>
-</form>
+{% set ns = namespace(strategy_options=[]) %}
 {% if not strategies %}
-<p class="hint">暂无可选策略号，请先到“系统设置 > 策略维护”新增策略。</p>
+  {% set ns.strategy_options = ns.strategy_options + [{'value': '', 'label': '暂无策略号'}] %}
 {% endif %}
+{% for s in strategies %}
+  {% set ns.strategy_options = ns.strategy_options + [{'value': s.strategy_no, 'label': s.strategy_no}] %}
+{% endfor %}
+
+{% set page_data = {
+  'type': 'form',
+  'title': '编辑策略投保属性',
+  'form': {
+    'method': 'post',
+    'action': request.path,
+    'fields': [
+      {
+        'type': 'select',
+        'name': 'strategy',
+        'label': '策略 *',
+        'required': true,
+        'value': item.strategy,
+        'options': ns.strategy_options,
+        'disabled': not strategies
+      },
+      {
+        'type': 'select',
+        'name': 'insurance_type',
+        'label': '投保属性 *',
+        'required': true,
+        'value': item.insurance_type,
+        'options': [
+          {'value': '投机', 'label': '投机'},
+          {'value': '套保', 'label': '套保'}
+        ]
+      }
+    ],
+    'actions': [
+      {'type': 'submit', 'variant': 'primary', 'label': '保存', 'disabled': not strategies},
+      {'type': 'link', 'variant': 'secondary', 'label': '返回列表', 'href': url_for('admin.strategy_insurance_maps')}
+    ]
+  },
+  'hints': [] if strategies else ['暂无可选策略号，请先到“基础数据维护 > 策略维护”新增策略。']
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}

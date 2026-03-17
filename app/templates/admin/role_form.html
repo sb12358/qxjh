@@ -1,37 +1,39 @@
 {% extends "base.html" %}
 {% block title %}{{ '新增角色' if mode == 'create' else '编辑角色' }} - QXJH{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h2>{{ '新增角色' if mode == 'create' else '编辑角色' }}</h2>
-</section>
+{% set ns = namespace(permission_options=[]) %}
+{% for permission in permissions %}
+  {% set ns.permission_options = ns.permission_options + [{
+    'value': permission.id,
+    'label': permission.name,
+    'checked': permission.id in selected_permission_ids
+  }] %}
+{% endfor %}
 
-<form method="post" class="panel form-grid">
-  <div class="field">
-    <label>角色名 *</label>
-    <input type="text" name="name" required value="{{ role.name if role else '' }}" />
-  </div>
-  <div class="field full">
-    <label>说明</label>
-    <input type="text" name="description" value="{{ role.description if role else '' }}" />
-  </div>
-
-  <div class="field full">
-    <label>页面权限分配</label>
-    <div class="checkbox-grid">
-      {% for permission in permissions %}
-      <label class="checkbox-card">
-        <input type="checkbox" name="permission_ids" value="{{ permission.id }}" {% if permission.id in selected_permission_ids %}checked{% endif %} />
-        <span>{{ permission.name }}（{{ permission.code }}）</span>
-      </label>
-      {% else %}
-      <span class="hint">暂无权限，请先创建权限</span>
-      {% endfor %}
-    </div>
-  </div>
-
-  <div class="action-row">
-    <button class="btn btn-primary" type="submit">保存</button>
-    <a class="btn btn-secondary" href="{{ url_for('admin.roles') }}">返回列表</a>
-  </div>
-</form>
+{% set page_data = {
+  'type': 'form',
+  'title': '新增角色' if mode == 'create' else '编辑角色',
+  'form': {
+    'method': 'post',
+    'action': request.path,
+    'fields': [
+      {'type': 'text', 'name': 'name', 'label': '角色名 *', 'required': true, 'value': role.name if role else ''},
+      {'type': 'text', 'name': 'description', 'label': '说明', 'full': true, 'value': role.description if role else ''},
+      {
+        'type': 'checkbox-group',
+        'name': 'permission_ids',
+        'label': '页面权限分配',
+        'full': true,
+        'options': ns.permission_options,
+        'emptyText': '暂无权限，请先创建权限'
+      }
+    ],
+    'actions': [
+      {'type': 'submit', 'variant': 'primary', 'label': '保存'},
+      {'type': 'link', 'variant': 'secondary', 'label': '返回列表', 'href': url_for('admin.roles')}
+    ]
+  }
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}

@@ -1,34 +1,22 @@
 {% extends "base.html" %}
 {% block title %}首页 - QXJH{% endblock %}
 {% block content %}
-<section class="page-head">
-  <h2>中台总览</h2>
-  <p>当前版本已具备后台管理可用能力，可继续扩展数据处理任务。</p>
-</section>
-
-<div class="metric-grid">
-  <article class="metric-card">
-    <span>系统用户</span>
-    <strong>{{ stats.user_count }}</strong>
-  </article>
-  <article class="metric-card">
-    <span>导入源数据配置</span>
-    <strong>{{ stats.source_table_count }}</strong>
-  </article>
-  <article class="metric-card">
-    <span>最终结果表配置</span>
-    <strong>{{ stats.final_table_count }}</strong>
-  </article>
-</div>
-
-<div class="panel-grid">
-  <section class="panel">
-    <h3>推荐操作</h3>
-    <div class="action-row">
-      <a class="btn btn-secondary" href="{{ url_for('admin.users') }}">管理用户</a>
-      <a class="btn btn-secondary" href="{{ url_for('admin.roles') }}">配置角色权限</a>
-      <a class="btn btn-secondary" href="{{ url_for('admin.departments') }}">维护组织架构</a>
-    </div>
-  </section>
-</div>
+{% set page_data = {
+  'type': 'overview',
+  'title': '中台总览',
+  'description': '当前版本已具备后台管理可用能力，可继续扩展数据处理任务。',
+  'metrics': [
+    {'label': '系统用户', 'value': stats.user_count},
+    {'label': '导入源数据配置', 'value': stats.source_table_count},
+    {'label': '最终结果表配置', 'value': stats.final_table_count}
+  ],
+  'recommendTitle': '推荐操作',
+  'recommendActions': [
+    {'type': 'link', 'variant': 'secondary', 'label': '管理用户', 'href': url_for('admin.users')},
+    {'type': 'link', 'variant': 'secondary', 'label': '配置角色权限', 'href': url_for('admin.roles')},
+    {'type': 'link', 'variant': 'secondary', 'label': '维护组织架构', 'href': url_for('admin.departments')}
+  ]
+} %}
+<div id="react-page-root"></div>
+<script id="react-page-data" type="application/json">{{ page_data|tojson }}</script>
 {% endblock %}
