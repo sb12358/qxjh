@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}QXJH 数据中台{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/tabler-icons.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-dot"></div>
+        <div>
+          <div class="brand-title">QXJH Data Hub</div>
+          <div class="brand-sub">企业数据整合中台</div>
+        </div>
+      </div>
+      {% if current_user.is_authenticated %}
+      <div class="userbox">
+        <span class="badge"><i class="ti ti-user-circle"></i>{{ current_user.full_name or current_user.username }}</span>
+        <a class="text-link" href="{{ url_for('auth.logout') }}">退出</a>
+      </div>
+      {% endif %}
+    </header>
+
+    {% if current_user.is_authenticated %}
+    <aside class="sidebar">
+      {% if current_user.has_permission('data_sources.view') %}
+      <details class="menu-group" {% if request.endpoint and request.endpoint.startswith('dashboard.data_source_') %}open{% endif %}>
+        <summary class="menu-item menu-summary {% if request.endpoint and request.endpoint.startswith('dashboard.data_source_') %}active{% endif %}">
+          <span><i class="ti ti-database-import"></i>导入数据源</span>
+          <span class="menu-caret" aria-hidden="true"></span>
+        </summary>
+        <div class="submenu">
+          <a class="submenu-item {% if request.endpoint == 'dashboard.data_source_settlement_fund' %}active{% endif %}" href="{{ url_for('dashboard.data_source_settlement_fund') }}"><i class="ti ti-cash"></i>结算资金查询表</a>
+          <a class="submenu-item {% if request.endpoint == 'dashboard.data_source_settlement_position_summary' %}active{% endif %}" href="{{ url_for('dashboard.data_source_settlement_position_summary') }}"><i class="ti ti-report-analytics"></i>结算持仓汇总表</a>
+        </div>
+      </details>
+      {% endif %}
+      {% if current_user.has_permission('final_tables.view') %}
+      <a class="menu-item {% if request.endpoint == 'dashboard.final_tables' %}active{% endif %}" href="{{ url_for('dashboard.final_tables') }}"><i class="ti ti-table"></i>最终结果表</a>
+      {% endif %}
+      {% if current_user.has_permission('admin.sector_master.view')
+            or current_user.has_permission('admin.strategy_master.view') %}
+      <details class="menu-group" {% if request.endpoint and ('strategy_master' in request.endpoint or 'sector_master' in request.endpoint) %}open{% endif %}>
+        <summary class="menu-item menu-summary {% if request.endpoint and ('strategy_master' in request.endpoint or 'sector_master' in request.endpoint) %}active{% endif %}">
+          <span>基础数据维护</span>
+          <span class="menu-caret" aria-hidden="true"></span>
+        </summary>
+        <div class="submenu">
+          {% if current_user.has_permission('admin.sector_master.view') %}
+          <a class="submenu-item {% if request.endpoint and 'sector_master' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.sector_masters') }}"><i class="ti ti-stack"></i>板块维护</a>
+          {% endif %}
+          {% if current_user.has_permission('admin.strategy_master.view') %}
+          <a class="submenu-item {% if request.endpoint and 'strategy_master' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.strategy_masters') }}"><i class="ti ti-target-arrow"></i>策略维护</a>
+          {% endif %}
+        </div>
+      </details>
+      {% endif %}
+      {% if current_user.has_permission('admin.users.view')
+            or current_user.has_permission('admin.roles.view')
+            or current_user.has_permission('admin.departments.view')
+            or current_user.has_permission('admin.permissions.view')
+            or current_user.has_permission('admin.strategy_insurance_map.view')
+            or current_user.has_permission('admin.strategy_sector_map.view')
+            or current_user.has_permission('account.change_password') %}
+      <details class="menu-group" {% if request.endpoint and request.endpoint.startswith('admin.') and 'strategy_master' not in request.endpoint and 'sector_master' not in request.endpoint %}open{% endif %}>
+        <summary class="menu-item menu-summary {% if request.endpoint and request.endpoint.startswith('admin.') and 'strategy_master' not in request.endpoint and 'sector_master' not in request.endpoint %}active{% endif %}">
+          <span>系统设置</span>
+          <span class="menu-caret" aria-hidden="true"></span>
+        </summary>
+        <div class="submenu">
+          {% if current_user.has_permission('admin.users.view') %}
+          <a class="submenu-item {% if request.endpoint and request.endpoint.startswith('admin.user') %}active{% endif %}" href="{{ url_for('admin.users') }}"><i class="ti ti-users"></i>用户管理</a>
+          {% endif %}
+          {% if current_user.has_permission('admin.roles.view') %}
+          <a class="submenu-item {% if request.endpoint and request.endpoint.startswith('admin.role') %}active{% endif %}" href="{{ url_for('admin.roles') }}"><i class="ti ti-shield"></i>角色管理</a>
+          {% endif %}
+          {% if current_user.has_permission('admin.departments.view') %}
+          <a class="submenu-item {% if request.endpoint and request.endpoint.startswith('admin.department') %}active{% endif %}" href="{{ url_for('admin.departments') }}"><i class="ti ti-building"></i>组织架构</a>
+          {% endif %}
+          {% if current_user.has_permission('admin.permissions.view') %}
+          <a class="submenu-item {% if request.endpoint and request.endpoint.startswith('admin.permission') %}active{% endif %}" href="{{ url_for('admin.permissions') }}"><i class="ti ti-lock-cog"></i>权限配置</a>
+          {% endif %}
+          {% if current_user.has_permission('admin.strategy_insurance_map.view') %}
+          <a class="submenu-item {% if request.endpoint and 'strategy_insurance_map' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.strategy_insurance_maps') }}"><i class="ti ti-link"></i>策略投保属性对应表</a>
+          {% endif %}
+          {% if current_user.has_permission('admin.strategy_sector_map.view') %}
+          <a class="submenu-item {% if request.endpoint and 'strategy_sector_map' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.strategy_sector_maps') }}"><i class="ti ti-git-branch"></i>板块策略对应表</a>
+          {% endif %}
+          {% if current_user.has_permission('account.change_password') %}
+          <a class="submenu-item {% if request.endpoint == 'admin.change_password' %}active{% endif %}" href="{{ url_for('admin.change_password') }}"><i class="ti ti-key"></i>修改密码</a>
+          {% endif %}
+        </div>
+      </details>
+      {% endif %}
+    </aside>
+    {% endif %}
+
+    <main class="content {% if not current_user.is_authenticated %}content-auth{% endif %}">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="flash {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
+  </body>
+</html>

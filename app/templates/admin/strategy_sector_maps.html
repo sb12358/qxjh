@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}板块策略对应表 - QXJH{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h2>板块策略对应表</h2>
+  <p>策略与所属板块的对应关系维护。</p>
+</section>
+
+<form method="post" class="panel form-grid">
+  <div class="field">
+    <label>策略 *</label>
+    <select name="strategy" required>
+      <option value="">请选择策略号</option>
+      {% for s in strategies %}
+      <option value="{{ s.strategy_no }}">{{ s.strategy_no }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label>策略所属板块 *</label>
+    <select name="sector" required>
+      <option value="">请选择板块名称</option>
+      {% for s in sectors %}
+      <option value="{{ s.name }}">{{ s.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="action-row">
+    <button class="btn btn-primary" type="submit" {% if not strategies or not sectors %}disabled{% endif %}>新增记录</button>
+  </div>
+</form>
+{% if not strategies %}
+<p class="hint">暂无可选策略号，请先到“系统设置 > 策略维护”新增策略。</p>
+{% endif %}
+{% if not sectors %}
+<p class="hint">暂无可选板块名称，请先到“系统设置 > 板块维护”新增板块。</p>
+{% endif %}
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>策略</th>
+        <th>策略所属板块</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.id }}</td>
+        <td>{{ item.strategy }}</td>
+        <td>{{ item.sector }}</td>
+        <td>
+          <div class="action-row">
+            <a class="btn btn-ghost" href="{{ url_for('admin.edit_strategy_sector_map', item_id=item.id) }}">编辑</a>
+            <form method="post" action="{{ url_for('admin.delete_strategy_sector_map', item_id=item.id) }}" onsubmit="return confirm('确认删除该记录？')">
+              <button class="btn btn-danger" type="submit">删除</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4">暂无数据</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

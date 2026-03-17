@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}编辑板块策略对应 - QXJH{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h2>编辑板块策略对应</h2>
+</section>
+
+<form method="post" class="panel form-grid">
+  <div class="field">
+    <label>策略 *</label>
+    <select name="strategy" required>
+      {% if not strategies %}
+      <option value="">暂无策略号</option>
+      {% endif %}
+      {% for s in strategies %}
+      <option value="{{ s.strategy_no }}" {% if item.strategy == s.strategy_no %}selected{% endif %}>{{ s.strategy_no }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label>策略所属板块 *</label>
+    <select name="sector" required>
+      {% if not sectors %}
+      <option value="">暂无板块名称</option>
+      {% endif %}
+      {% for s in sectors %}
+      <option value="{{ s.name }}" {% if item.sector == s.name %}selected{% endif %}>{{ s.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-primary" type="submit" {% if not strategies or not sectors %}disabled{% endif %}>保存</button>
+    <a class="btn btn-secondary" href="{{ url_for('admin.strategy_sector_maps') }}">返回列表</a>
+  </div>
+</form>
+{% if not strategies %}
+<p class="hint">暂无可选策略号，请先到“系统设置 > 策略维护”新增策略。</p>
+{% endif %}
+{% if not sectors %}
+<p class="hint">暂无可选板块名称，请先到“系统设置 > 板块维护”新增板块。</p>
+{% endif %}
+{% endblock %}

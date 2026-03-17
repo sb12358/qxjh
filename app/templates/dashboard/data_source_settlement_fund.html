@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}结算资金查询表 - QXJH{% endblock %}
+{% block content %}
+<section class="page-head page-head-inline">
+  <div>
+    <h2>结算资金查询表</h2>
+    <p>每天上传 Excel 后自动入库；可按结算日期筛选展示对应数据。</p>
+  </div>
+</section>
+
+<form method="post" enctype="multipart/form-data" action="{{ url_for('dashboard.import_data_source_settlement_fund') }}" class="panel form-grid">
+  <div class="field full">
+    <label>上传 Excel（.xlsx）</label>
+    <input type="file" name="excel_file" accept=".xlsx" required />
+  </div>
+  <div class="action-row">
+    <button class="btn btn-primary" type="submit">上传并导入</button>
+  </div>
+</form>
+
+<div class="panel">
+  <h3>按结算日期查看</h3>
+  <form method="get" action="{{ url_for('dashboard.data_source_settlement_fund') }}" class="form-grid">
+    <div class="field">
+      <label>结算日期</label>
+      <input type="date" name="settlement_date" value="{{ selected_date_str }}" />
+    </div>
+    <div class="field">
+      <label>策略代码</label>
+      <select name="strategy_code">
+        <option value="">全部</option>
+        {% for x in strategy_code_options %}
+        <option value="{{ x }}" {% if strategy_code_filter == x %}selected{% endif %}>{{ x }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label>策略代码（模糊）</label>
+      <input type="text" name="strategy_code_keyword" value="{{ strategy_code_keyword }}" placeholder="例如：GF / XY" />
+    </div>
+    <div class="field">
+      <label>板块</label>
+      <select name="sector">
+        <option value="">全部</option>
+        {% for x in sector_options %}
+        <option value="{{ x }}" {% if sector_filter == x %}selected{% endif %}>{{ x }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label>策略属性（下拉）</label>
+      <select name="insurance_type">
+        <option value="">全部</option>
+        {% for x in insurance_type_options %}
+        <option value="{{ x }}" {% if insurance_type_filter == x %}selected{% endif %}>{{ x }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" type="submit">查询</button>
+      <a class="btn btn-secondary" href="{{ url_for('dashboard.data_source_settlement_fund', settlement_date=selected_date_str) }}">重置筛选</a>
+    </div>
+  </form>
+  <div class="action-row">
+    {% for d in available_dates %}
+    <a class="btn {% if selected_date_str and d.date_str == selected_date_str %}btn-primary{% else %}btn-secondary{% endif %}" href="{{ url_for('dashboard.data_source_settlement_fund', settlement_date=d.date_str, strategy_code=strategy_code_filter, strategy_code_keyword=strategy_code_keyword, sector=sector_filter, insurance_type=insurance_type_filter) }}">
+      {{ d.date_str }}
+    </a>
+    {% else %}
+    <span class="hint">暂无可选结算日期</span>
+    {% endfor %}
+  </div>
+</div>
+
+{% if selected_date %}
+<p class="hint">当前展示日期：{{ selected_date.strftime('%Y-%m-%d') }}</p>
+{% endif %}
+
+{% if display_columns %}
+<div class="table-wrap settlement-table-wrap">
+  <table>
+    <thead>
+      <tr>
+        {% for h in display_columns %}
+        <th>{{ h }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in display_rows %}
+      <tr>
+        {% for h in display_columns %}
+        <td>{{ row.get(h) }}</td>
+        {% endfor %}
+      </tr>
+      {% else %}
+      <tr><td colspan="{{ display_columns|length }}">暂无数据</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="hint">当前日期下暂无数据，请切换其他日期或先上传 Excel。</p>
+{% endif %}
+{% endblock %}

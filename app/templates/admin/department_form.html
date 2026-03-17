@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ '新增部门' if mode == 'create' else '编辑部门' }} - QXJH{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h2>{{ '新增部门' if mode == 'create' else '编辑部门' }}</h2>
+</section>
+
+<form method="post" class="panel form-grid">
+  <div class="field">
+    <label>部门名 *</label>
+    <input type="text" name="name" required value="{{ department.name if department else '' }}" />
+  </div>
+  <div class="field">
+    <label>部门编码 *</label>
+    <input type="text" name="code" required value="{{ department.code if department else '' }}" />
+  </div>
+  <div class="field full">
+    <label>上级部门</label>
+    <select name="parent_id">
+      <option value="">无</option>
+      {% for dept in departments %}
+      {% if not department or dept.id != department.id %}
+      <option value="{{ dept.id }}" {% if department and department.parent_id == dept.id %}selected{% endif %}>{{ dept.name }}</option>
+      {% endif %}
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-primary" type="submit">保存</button>
+    <a class="btn btn-secondary" href="{{ url_for('admin.departments') }}">返回列表</a>
+  </div>
+</form>
+{% endblock %}

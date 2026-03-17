@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ '新增用户' if mode == 'create' else '编辑用户' }} - QXJH{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h2>{{ '新增用户' if mode == 'create' else '编辑用户' }}</h2>
+</section>
+
+<form method="post" class="panel form-grid">
+  <div class="field">
+    <label>用户名 *</label>
+    <input type="text" name="username" required value="{{ user.username if user else '' }}" />
+  </div>
+  <div class="field">
+    <label>用户姓名 *</label>
+    <input type="text" name="full_name" required value="{{ user.full_name if user else '' }}" />
+  </div>
+  <div class="field">
+    <label>邮箱</label>
+    <input type="email" name="email" value="{{ user.email if user else '' }}" />
+  </div>
+  <div class="field">
+    <label>{% if mode == 'create' %}密码 *{% else %}新密码（不改可留空）{% endif %}</label>
+    <input type="password" name="password" {% if mode == 'create' %}required{% endif %} />
+  </div>
+  <div class="field">
+    <label>所属部门</label>
+    <select name="department_id">
+      <option value="">未分配</option>
+      {% for dept in departments %}
+      <option value="{{ dept.id }}" {% if user and user.department_id == dept.id %}selected{% endif %}>{{ dept.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="field full">
+    <label>角色分配</label>
+    <div class="checkbox-grid">
+      {% for role in roles %}
+      <label class="checkbox-card">
+        <input type="checkbox" name="role_ids" value="{{ role.id }}" {% if role.id in selected_role_ids %}checked{% endif %} />
+        <span>{{ role.name }}</span>
+      </label>
+      {% else %}
+      <span class="hint">暂无角色，请先创建角色</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if mode == 'edit' %}
+  <div class="field full">
+    <label class="checkbox-inline">
+      <input type="checkbox" name="is_active" {% if user and user.is_active %}checked{% endif %} />
+      用户启用状态
+    </label>
+  </div>
+  {% endif %}
+
+  <div class="action-row">
+    <button class="btn btn-primary" type="submit">保存</button>
+    <a class="btn btn-secondary" href="{{ url_for('admin.users') }}">返回列表</a>
+  </div>
+</form>
+{% endblock %}

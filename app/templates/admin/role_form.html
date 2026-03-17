@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ '新增角色' if mode == 'create' else '编辑角色' }} - QXJH{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h2>{{ '新增角色' if mode == 'create' else '编辑角色' }}</h2>
+</section>
+
+<form method="post" class="panel form-grid">
+  <div class="field">
+    <label>角色名 *</label>
+    <input type="text" name="name" required value="{{ role.name if role else '' }}" />
+  </div>
+  <div class="field full">
+    <label>说明</label>
+    <input type="text" name="description" value="{{ role.description if role else '' }}" />
+  </div>
+
+  <div class="field full">
+    <label>页面权限分配</label>
+    <div class="checkbox-grid">
+      {% for permission in permissions %}
+      <label class="checkbox-card">
+        <input type="checkbox" name="permission_ids" value="{{ permission.id }}" {% if permission.id in selected_permission_ids %}checked{% endif %} />
+        <span>{{ permission.name }}（{{ permission.code }}）</span>
+      </label>
+      {% else %}
+      <span class="hint">暂无权限，请先创建权限</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-primary" type="submit">保存</button>
+    <a class="btn btn-secondary" href="{{ url_for('admin.roles') }}">返回列表</a>
+  </div>
+</form>
+{% endblock %}

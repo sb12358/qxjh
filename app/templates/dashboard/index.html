@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}首页 - QXJH{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h2>中台总览</h2>
+  <p>当前版本已具备后台管理可用能力，可继续扩展数据处理任务。</p>
+</section>
+
+<div class="metric-grid">
+  <article class="metric-card">
+    <span>系统用户</span>
+    <strong>{{ stats.user_count }}</strong>
+  </article>
+  <article class="metric-card">
+    <span>导入源数据配置</span>
+    <strong>{{ stats.source_table_count }}</strong>
+  </article>
+  <article class="metric-card">
+    <span>最终结果表配置</span>
+    <strong>{{ stats.final_table_count }}</strong>
+  </article>
+</div>
+
+<div class="panel-grid">
+  <section class="panel">
+    <h3>推荐操作</h3>
+    <div class="action-row">
+      <a class="btn btn-secondary" href="{{ url_for('admin.users') }}">管理用户</a>
+      <a class="btn btn-secondary" href="{{ url_for('admin.roles') }}">配置角色权限</a>
+      <a class="btn btn-secondary" href="{{ url_for('admin.departments') }}">维护组织架构</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

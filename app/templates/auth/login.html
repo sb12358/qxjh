@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}登录 - QXJH{% endblock %}
+{% block content %}
+<div class="login-single">
+  <section class="login-card">
+    <h2>账号登录</h2>
+    <form method="post" class="form-stack">
+      <label>用户名</label>
+      <input type="text" name="username" required />
+      <label>密码</label>
+      <input type="password" name="password" required />
+      <button class="btn btn-primary" type="submit">登录系统</button>
+    </form>
+    <p class="hint">演示账号：admin / admin123</p>
+  </section>
+</div>
+{% endblock %}
